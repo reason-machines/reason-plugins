@@ -29,6 +29,14 @@ These are Reason Machines' publisher-owned plugins. Installation does not depend
 on acceptance into Anthropic's curated marketplace or OpenAI's public directory;
 those services review and approve listings separately.
 
+### Cursor
+
+[Add Reason to Cursor](https://cursor.com/link/mcp/install?name=reason&config=eyJ1cmwiOiJodHRwczovL21jcC5yZWFzb25tYWNoaW5lcy5jb20vbWNwIn0%3D)
+
+For privacy details, see the [Privacy Policy](https://reasonmachines.com/privacy-policy)
+and [Terms of Service](https://reasonmachines.com/terms-of-service). For support,
+contact [contact@reasonmachines.com](mailto:contact@reasonmachines.com).
+
 In the Codex app, open **Plugins → Add → Add plugin marketplace**, paste
 `https://github.com/reason-machines/reason-plugins`, and add the marketplace. Leave
 **Git ref** and **Sparse paths** empty. Select **Reason MCP → Install**, then
