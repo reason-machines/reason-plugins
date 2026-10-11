@@ -36,6 +36,47 @@ complete the browser authentication prompt. No separate MCP configuration is nee
 
 The marketplace identifier is `reason`.
 
+## Moving from the Ara plugin
+
+Reason was called Ara, and this repository was `Aradotso/ara-mcp`. The `ara`
+plugin (and `ara-handoff` before it) connected to a server that is now retired:
+`https://api.ara.so/mcp/ara` answers HTTP 410. The `reason` plugin replaces both.
+
+### Claude Code
+
+If you added the marketplace under its old name, it is still registered as `ara`
+on your machine. Refresh it and install the plugin under its new name:
+
+```sh
+claude plugin marketplace update ara
+claude plugin install reason@ara
+```
+
+Then open `/mcp` and authenticate Reason. After the refresh Claude Code no longer
+loads the retired server and moves your `ara@ara` (or `ara-handoff@ara`) setting
+to `reason@ara`; the install fetches the plugin itself.
+
+### Codex
+
+Codex keeps serving an installed plugin until you remove it, so remove the old
+one and add the new one:
+
+```sh
+codex plugin remove ara@ara
+codex plugin marketplace remove ara
+codex plugin marketplace add reason-machines/reason-plugins
+codex plugin add reason@reason
+```
+
+### Cursor and other clients
+
+Delete the `ara` entry whose URL ends in `/mcp/ara` from your MCP configuration
+(`~/.cursor/mcp.json` for Cursor) and add the server shown under
+[Other MCP clients](#other-mcp-clients).
+
+If you have the Reason CLI, `reason mcp uninstall` removes the retired
+registrations from Claude Code, Codex and Cursor in one step.
+
 ## More from Reason
 
 - [reason-agent](https://github.com/reason-machines/reason-agent): what Reason Agent is, how to use it, releases and benchmarks.
@@ -125,6 +166,12 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 claude plugin validate --strict plugins/reason
 claude plugin validate --strict .claude-plugin/marketplace.json
 ```
+
+`python3 -m unittest discover -s tests` installs the package with the Codex CLI
+and checks the manifests, the `renames` map for former plugin names, and
+`server.json`, the entry for the [MCP Registry](https://registry.modelcontextprotocol.io).
+Publish that entry by running the **Publish to MCP Registry** workflow by hand;
+to publish a change, raise `version` in `server.json` first.
 
 Validate the Codex manifest with the Codex plugin validator. Test installations in
 an isolated client configuration directory, preserving personal installations.

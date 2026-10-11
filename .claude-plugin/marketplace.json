@@ -20,5 +20,9 @@
       "repository": "https://github.com/reason-machines/reason-plugins",
       "license": "MIT"
     }
-  ]
+  ],
+  "renames": {
+    "ara-handoff": "reason",
+    "ara": "reason"
+  }
 }

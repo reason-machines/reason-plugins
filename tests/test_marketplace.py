@@ -84,5 +84,50 @@ class MarketplaceInstallation(unittest.TestCase):
             self.assertEqual(sorted(p.name for p in (ROOT / 'plugins').iterdir()), ['reason'])
 
 
+RETIRED_SERVER = '/mcp/ara'
+SERVER_URL = 'https://mcp.reasonmachines.com/mcp'
+RAW_MAIN = 'https://raw.githubusercontent.com/reason-machines/reason-plugins/main/'
+
+
+class PublishedManifests(unittest.TestCase):
+    def test_former_claude_plugin_names_move_to_reason(self):
+        # Claude Code follows `renames` for people who enabled a plugin under a
+        # name this marketplace no longer lists. Without an entry their install
+        # fails with "Plugin ara not found in marketplace ara".
+        manifest = json.loads((ROOT / '.claude-plugin/marketplace.json').read_text())
+        listed = {plugin['name'] for plugin in manifest['plugins']}
+        self.assertEqual(manifest['renames'], {'ara-handoff': 'reason', 'ara': 'reason'})
+        for former, current in manifest['renames'].items():
+            self.assertNotIn(former, listed)
+            self.assertIn(current, listed)
+
+    def test_nothing_installable_points_at_the_retired_server(self):
+        # README.md names the retired address to tell people to remove it.
+        checked = 0
+        for path in ROOT.rglob('*'):
+            relative = path.relative_to(ROOT)
+            if not path.is_file() or relative.parts[0] in {'.git', 'tests'} or relative.name == 'README.md':
+                continue
+            if path.suffix in {'.json', '.yaml', '.yml', '.toml', '.md'}:
+                checked += 1
+                self.assertNotIn(RETIRED_SERVER, path.read_text(), str(relative))
+        self.assertGreater(checked, 5)
+
+    def test_registry_entry_is_the_server_the_plugin_installs(self):
+        server = json.loads((ROOT / 'server.json').read_text())
+        plugin = json.loads((ROOT / 'plugins/reason/.mcp.json').read_text())
+        self.assertEqual(plugin['mcpServers']['reason']['url'], SERVER_URL)
+        self.assertEqual(server['remotes'], [{'type': 'streamable-http', 'url': SERVER_URL}])
+        # The publish workflow signs in with GitHub OIDC, which grants only
+        # names under this organization.
+        self.assertRegex(server['name'], r'^io\.github\.reason-machines/[a-zA-Z0-9._-]+$')
+        self.assertLessEqual(len(server['description']), 100)
+        self.assertLessEqual(len(server['title']), 100)
+        for icon in server['icons']:
+            self.assertTrue(icon['src'].startswith(RAW_MAIN), icon['src'])
+            image = ROOT / icon['src'][len(RAW_MAIN):]
+            self.assertEqual(image.read_bytes()[:8], b'\x89PNG\r\n\x1a\n', icon['src'])
+
+
 if __name__ == '__main__':
     unittest.main()
