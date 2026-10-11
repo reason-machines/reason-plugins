@@ -52,9 +52,9 @@ claude plugin marketplace update ara
 claude plugin install reason@ara
 ```
 
-Then open `/mcp` and authenticate Reason. The refresh alone turns your enabled
-`ara@ara` (or `ara-handoff@ara`) into `reason@ara` in your settings and stops
-loading the retired server.
+Then open `/mcp` and authenticate Reason. After the refresh Claude Code no longer
+loads the retired server and moves your `ara@ara` (or `ara-handoff@ara`) setting
+to `reason@ara`; the install fetches the plugin itself.
 
 ### Codex
 
@@ -166,6 +166,12 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 claude plugin validate --strict plugins/reason
 claude plugin validate --strict .claude-plugin/marketplace.json
 ```
+
+`python3 -m unittest discover -s tests` installs the package with the Codex CLI
+and checks the manifests, the `renames` map for former plugin names, and
+`server.json`, the entry for the [MCP Registry](https://registry.modelcontextprotocol.io).
+Publish that entry by running the **Publish to MCP Registry** workflow by hand;
+to publish a change, raise `version` in `server.json` first.
 
 Validate the Codex manifest with the Codex plugin validator. Test installations in
 an isolated client configuration directory, preserving personal installations.
