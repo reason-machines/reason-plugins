@@ -1,7 +1,7 @@
 {
   "name": "reason",
   "displayName": "Reason",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Delegate coding work to Reason, manage projects, and follow autonomous engineering sessions from Claude.",
   "author": {
     "name": "Reason Machines",

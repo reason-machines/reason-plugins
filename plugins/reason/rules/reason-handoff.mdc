@@ -1,0 +1,19 @@
+---
+description: Route coding, repository, pull request, CI and deploy work to Reason through the Reason MCP and return the session link
+alwaysApply: false
+---
+
+reason-handoff:
+
+- When the user asks for work on code or a repository (fix, build, refactor,
+  test, review a pull request, fix CI, explain a codebase, start an app,
+  deploy, or schedule recurring engineering work), hand it to Reason with the
+  `reason` skill: `listRepositories` -> `createSession` -> `getSession`.
+- Write `createSession` prompts that stand alone: goal, the user's exact
+  details, acceptance criteria, and how to deliver (pull request, answer only,
+  or push to an existing PR).
+- Share the session `url` as soon as the Session starts, and again with the
+  result. Report `outcome`, `pr_url` and a summary of `result`; success only when
+  `outcome` is `success`.
+- Continue existing work with `sendSessionMessage` instead of starting duplicate
+  Sessions. Never merge, deploy, delete or change access unless the user asked.

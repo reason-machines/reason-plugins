@@ -57,7 +57,7 @@ class MarketplaceInstallation(unittest.TestCase):
             self.assertEqual(portable['$schema'],
                              'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json')
             self.assertEqual(portable['name'], 'reason')
-            self.assertEqual(portable['version'], '1.1.1')
+            self.assertEqual(portable['version'], '1.2.0')
             self.assertEqual(portable['version'], plugin['version'])
             interface = portable['extensions']['com.openai']['interface']
             self.assertEqual(interface, plugin['interface'])

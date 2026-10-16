@@ -1,4 +1,4 @@
-# Reason plugins for Claude Code and Codex
+# Reason plugins for Claude Code, Codex, Cursor and Grok Bot
 
 Connect a coding agent to your Reason workspace at **https://mcp.reasonmachines.com/mcp**.
 Sign in through your browser, choose a workspace, review permissions, and connect.
@@ -29,9 +29,24 @@ These are Reason Machines' publisher-owned plugins. Installation does not depend
 on acceptance into Anthropic's curated marketplace or OpenAI's public directory;
 those services review and approve listings separately.
 
-### Cursor
+### Grok Bot and Cursor
 
-[Add Reason to Cursor](https://cursor.com/link/mcp/install?name=reason&config=eyJ1cmwiOiJodHRwczovL21jcC5yZWFzb25tYWNoaW5lcy5jb20vbWNwIn0%3D)
+Grok Bot ([x.ai/bot](https://x.ai/bot)) installs plugins from the Cursor
+Marketplace, so one Cursor plugin serves both. Once the listing is live, open it
+in either app, choose **Add to Grok Bot** or **Add to Cursor**, and complete the
+browser sign-in when Reason first asks.
+
+The plugin contains:
+
+- the **reason** skill: how to hand any coding task to Reason, follow it and
+  return the session link and pull request;
+- slash commands `/reason-fix`, `/reason-build`, `/reason-review`,
+  `/reason-fix-ci`, `/reason-ask` and `/reason-status`;
+- a **reason-handoff** rule the agent applies when a request touches code;
+- the Reason MCP server, `https://mcp.reasonmachines.com/mcp`, with OAuth only.
+
+Until the listing is approved, Cursor can connect the MCP server alone:
+[Add Reason to Cursor](https://cursor.com/link/mcp/install?name=reason&config=eyJ1cmwiOiJodHRwczovL21jcC5yZWFzb25tYWNoaW5lcy5jb20vbWNwIn0%3D).
 
 For privacy details, see the [Privacy Policy](https://reasonmachines.com/privacy-policy)
 and [Terms of Service](https://reasonmachines.com/terms-of-service). For support,
@@ -131,20 +146,21 @@ are audience-bound: a REST login cannot be reused as an MCP login.
 
 ## Try it
 
-- “Show my Reason projects and recent sessions.”
-- “Create a project for this repository and add these instructions.”
-- “Find my session about the billing bug and show its latest messages.”
-- “Archive this project, then restore it.”
+- “Fix the 500 on /api/orders in acme/web and open a PR.” (or `/reason-fix …`)
+- “Review https://github.com/acme/web/pull/42.” (or `/reason-review …`)
+- “CI is red on my PR #57, make it green without skipping tests.”
+- “How does authentication work in acme/api?” (or `/reason-ask …`)
+- “Every weekday at 9am, triage new issues in acme/web.”
+- “Show my recent Reason sessions.” (or `/reason-status`)
 
 The tools follow the active public v3 contract and your granted scopes. Start with
 `getSelf` to check the connected workspace. Path and query arguments are top-level;
 JSON request bodies go in `body`. Workspace selection is automatic and pinned to
 the connection.
 
-For example, `listProjects` accepts `{"archived":"include"}`. `updateProject`
-accepts `{"projectId":"…","body":{"project_md":{"content":"…","expected_revision":1}}}`.
-Read the current `project_document.revision` with `getProject` first. A stale
-revision returns 409, preserving the newer instructions.
+For example, `createSession` accepts
+`{"body":{"prompt":"…","repo":"acme/web"}}` and returns the session `url`;
+`getSession` accepts `{"sessionId":"…","fields":"status,outcome,result,pr_url"}`.
 
 Creating a session starts asynchronous work; inspect its status before assuming
 it finished. Follow pagination cursors for complete lists. Tool results preserve
@@ -165,6 +181,34 @@ service's OAuth approval. Revoking a connection or removing its workspace
 membership stops access. Use your client's disconnect/logout controls and Reason's
 connected-app controls when the integration is no longer needed.
 
+## Publishing to Grok Bot and Cursor
+
+Both listings are reviewed by their marketplaces, and submitting accepts the
+[Cursor Marketplace Publisher Terms](https://cursor.com/marketplace-publisher-terms).
+
+1. Merge to `main` and confirm the checks under [Validation](#support-and-validation) pass.
+2. **Cursor:** go to [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish)
+   and submit `https://github.com/reason-machines/reason-plugins`. Cursor reads
+   `.cursor-plugin/marketplace.json` and `plugins/reason/.cursor-plugin/plugin.json`.
+3. **Grok Bot:** go to [x.ai/bot/marketplace/submit-a-plugin](https://x.ai/bot/marketplace/submit-a-plugin)
+   and select **Grok Bot** and **Cursor** under *Where do you want to be listed?*
+   - Organization: Reason Machines; website `https://reasonmachines.com`.
+   - Logotype URL: `https://raw.githubusercontent.com/reason-machines/reason-plugins/main/plugins/reason/assets/reason-logo.png`
+     (512×512 PNG on an opaque white plate).
+   - MCP Server URL or Public GitHub Repository:
+     `https://github.com/reason-machines/reason-plugins`.
+   - Brief Description: the `description` in `plugins/reason/.cursor-plugin/plugin.json`.
+   - Testing Instructions:
+
+     > Install Reason and sign in when prompted (browser OAuth; a Reason account at
+     > reasonmachines.com with GitHub connected, no API key). Ask
+     > “Show my recent Reason sessions” to confirm the connection. Then run
+     > `/reason-ask How is this repository structured? in <owner/repo>` with
+     > any repository you connected: the agent returns a reasonmachines.com
+     > session link at once and, a few minutes later, an answer that cites
+     > files. `/reason-fix <bug> in <owner/repo>` opens a pull request the
+     > same way.
+
 ## Support and validation
 
 Contact [Reason Machines](mailto:contact@reasonmachines.com).
@@ -173,7 +217,14 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 ```sh
 claude plugin validate --strict plugins/reason
 claude plugin validate --strict .claude-plugin/marketplace.json
+curl -fsSO https://raw.githubusercontent.com/cursor/plugin-template/main/scripts/validate-template.mjs
+node validate-template.mjs   # Cursor's template validator, run from the repository root
 ```
+
+`tests/test_cursor_plugin.py` checks the Cursor package against the submission
+checklist: valid JSON, unique kebab-case names, relative paths that exist, a
+square opaque logo, an OAuth-only MCP entry with no undeclared `${VAR}`, and
+frontmatter on every skill, command and rule.
 
 `python3 -m unittest discover -s tests` installs the package with the Codex CLI
 and checks the manifests, the `renames` map for former plugin names, and
