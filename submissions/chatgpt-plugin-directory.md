@@ -83,9 +83,17 @@ The tests check that they agree.
 ## MCP connection
 
 The draft's connection is already set up: OAuth with **Dynamic Client
-Registration (`dcr`)**, no client secret, and a verified domain. The portal
-accepts the challenge on the MCP host or an eligible parent domain, and the
-draft is already verified, so configure nothing.
+Registration (`dcr`)**, no client secret, and a verified domain. Two hosts
+matter here:
+
+- **Product domain, `reasonmachines.com`:** the parent domain whose challenge
+  verifies the existing draft (as relayed from the supervisor's read-only
+  portal check). Keep that token as it is.
+- **MCP host, `mcp.reasonmachines.com`:** where the MCP endpoint lives. Its
+  challenge route is optional and not in use.
+
+The portal accepts a challenge on the MCP host or an eligible parent domain. The
+draft is already verified, so configure nothing on either host.
 
 The monorepo's MCP host can also serve
 `https://mcp.reasonmachines.com/.well-known/openai-apps-challenge` from an

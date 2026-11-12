@@ -8,17 +8,20 @@ notes; they are unverified until the owner signs in, because the portal was
 logged out when this was written):
 - Sign in with a `@reasonmachines.com` work email.
 - Accept the Muse developer terms and confirm authority over the brand assets.
-- Provide business verification for Ara Software, Inc. Guidelines section 5.2
-  asks for "business information and supporting evidence" to verify the
-  organization; it names no verification provider, so do not assume Persona.
-  Check the portal for the exact step.
+- Business verification for Ara Software, Inc. (unverified until seen in the
+  portal). The guidelines page fetched on 2026-11-12 at 04:2x UTC had a
+  "Business verification and terms" section asking for "the business
+  information and supporting evidence requested to verify your organization".
+  An earlier fetch the same day had no such section, so the page is changing.
+  It names no verification provider: do not assume Persona. Do only what the
+  portal itself asks for.
 - Answer the **data processing questionnaire**.
 - Enter the dedicated reviewer test account.
 
 Muse also asks for API or MCP documentation that covers setup, inputs and
 outputs, read/write classification, sensitive designations, permissions, side
-effects, status handling, errors and rate limits (guidelines 5.4 and 5.6), and
-it checks that sensitive writes ask for approval on every use (6.3). The public
+effects, status handling, errors and rate limits, and it checks that sensitive
+writes ask for approval on every use. The public
 [MCP docs](https://docs.reasonmachines.com/docs/mcp) cover setup, OAuth and
 scopes; the per-tool read/write and destructive annotations come from the
 server. Confirm the docs cover status handling, errors and rate limits before
@@ -52,8 +55,8 @@ annotation step is not live yet.
 
 ## Developer portal intake
 
-- **Business verification (section 5.2):** the owner provides what the portal
-  asks for to verify Ara Software, Inc. (provider and form unverified).
+- **Business verification:** the owner provides only what the portal asks for
+  to verify Ara Software, Inc. (step, provider and form unverified).
 - **Data processing questionnaire:**
   - Answer only from current, documented controls. The
     [security page](https://reasonmachines.com/security) and privacy policy are
