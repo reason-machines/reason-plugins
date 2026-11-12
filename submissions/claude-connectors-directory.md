@@ -98,18 +98,21 @@ Paste into the reviewer instructions, then put the credentials in the portal's
 private fields:
 
 > 1. In Claude, add the connector and select Connect. A Reason sign-in page opens.
-> 2. Sign in with the test account provided, choose the workspace "Reviewer", and approve the permissions.
-> 3. Try these prompts:
->    - "Which Reason workspace am I connected to?" (getSelf)
->    - "List the repositories Reason can work on." (listRepositories)
->    - "Show my recent Reason sessions." (listSessions)
->    - "Start a Reason session in <sample repo> to add a short section to the README that explains how to run the tests." (createSession; returns a session link right away)
->    - "What is the status of that session?" (getSession)
->    - "Tell that session to also fix any typos it finds in the README." (sendSessionMessage)
-> 4. Sessions run asynchronously and usually take a few minutes before they open a pull request in the sample repository. Nothing outside the reviewer workspace is affected.
+> 2. Sign in with the test account provided, choose the workspace "Reason MCP Directory Review", and approve the permissions.
+> 3. Try these scratch-session prompts. They do not need a connected repository:
+>    - "Which Reason account and workspace am I connected to, and what can this connection do?" (getSelf)
+>    - "List my Reasons, my recent sessions, and any devices or machines I can run work on." (listReasons, listSessions, listDevices, listMachines)
+>    - "Create a scratch Reason and start a cloud coding session in it that writes a small function with tests, under $1 and 5 minutes, and tell me whether the tests passed." (createReason, createSession, then getSession and listSessionEvents)
+>    - "Run two separate cloud coding sessions at the same time, one writing a slugify function with tests and one a word-count function with tests, and report each result separately." (createSession twice, then getSession and listSessionEvents for each session)
+>    - "In the scratch session you just ran, add a test for empty input and tell me if it passes." (sendSessionMessage to the same session, then getSession, listSessionMessages, and listSessionEvents)
+> 4. Sessions run asynchronously. Wait for each session to finish and read its outcome before reporting whether its tests passed. Use only the scratch sessions created for this review.
 
-Confirm that every tool was exercised through Claude as a custom connector or
-through MCP Inspector.
+These prompts describe five positive workflows verified through direct MCP calls
+with mcpdo. The prompt wording has not been tested in Claude. This is not evidence
+that every tool was exercised, and the parallel workflow verifies two cloud
+sessions, not two Machines or physical computers. The three negative review cases
+have not been run. Complete the remaining testing through Claude as a custom
+connector or MCP Inspector before confirming the portal's every-tool requirement.
 
 ## Step 9: Compliance
 
