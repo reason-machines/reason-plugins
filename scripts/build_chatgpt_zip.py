@@ -20,6 +20,7 @@ import json
 from pathlib import Path
 import struct
 import sys
+import unicodedata
 from urllib.parse import urlsplit
 import zipfile
 import zlib
@@ -71,13 +72,16 @@ def check_listing(manifest):
         value = interface.get(key)
         if not isinstance(value, str) or len(value) > MAX_URL:
             raise SystemExit(f'interface.{key} must be a URL of at most {MAX_URL} characters.')
-        if any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in value):
-            raise SystemExit(f'interface.{key} must not contain whitespace or control characters.')
+        # Cc control, Cf format (zero-width, BOM, soft hyphen), Z* separators.
+        if any(character.isspace() or unicodedata.category(character)[0] in 'CZ' for character in value):
+            raise SystemExit(f'interface.{key} must not contain whitespace, control or invisible characters.')
         try:
             parts = urlsplit(value)
             port = parts.port
             if parts.scheme != 'https' or not parts.hostname:
                 raise ValueError('expected an https URL with a host')
+            if port == 0:
+                raise ValueError('port 0 is not a usable port')
             if parts.username is not None or parts.password is not None:
                 raise ValueError('embedded credentials are not allowed')
         except ValueError as error:
@@ -121,6 +125,8 @@ def check_png_stream(data, width, height, label):
             depths = {0: (1, 2, 4, 8, 16), 2: (8, 16), 3: (1, 2, 4, 8), 4: (8, 16), 6: (8, 16)}
             if depth not in depths.get(color, ()) or compression != 0 or filtering != 0 or interlace not in (0, 1):
                 raise SystemExit(f'{label}: invalid IHDR fields.')
+        elif kind == b'PLTE' and b'IDAT' in kinds:
+            raise SystemExit(f'{label}: PLTE must come before IDAT.')
         elif kind == b'IDAT':
             if compressed and kinds[-1] != b'IDAT':
                 raise SystemExit(f'{label}: IDAT chunks must be contiguous.')
@@ -131,6 +137,8 @@ def check_png_stream(data, width, height, label):
         offset = end
     if not kinds or kinds[0] != b'IHDR' or kinds[-1] != b'IEND' or not compressed:
         raise SystemExit(f'{label}: incomplete PNG structure.')
+    if color == 3 and b'PLTE' not in kinds:
+        raise SystemExit(f'{label}: palette PNG has no PLTE chunk.')
     channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color]
     passes = [(0, 0, 1, 1)] if interlace == 0 else [
         (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
