@@ -1,7 +1,7 @@
 {
   "name": "reason",
   "displayName": "Reason",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Hand off coding work to Reason cloud agents: fix bugs, build features, review pull requests, fix CI, refactor, write tests and answer codebase questions in your GitHub repositories. Reason runs each task on its own machine, opens a pull request with proof and returns a live session link. Browser sign-in with OAuth; no API key.",
   "author": {
     "name": "Reason Machines",

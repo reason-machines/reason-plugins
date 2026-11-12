@@ -181,6 +181,11 @@ service's OAuth approval. Revoking a connection or removing its workspace
 membership stops access. Use your client's disconnect/logout controls and Reason's
 connected-app controls when the integration is no longer needed.
 
+## Directory submissions
+
+Packages for the Claude Connectors Directory, the ChatGPT plugin directory, the
+Cursor Marketplace (and Grok Bot) and Muse are in [submissions/](submissions/README.md).
+
 ## Publishing to Grok Bot and Cursor
 
 Both listings are reviewed by their marketplaces, and submitting accepts the
@@ -194,7 +199,7 @@ Both listings are reviewed by their marketplaces, and submitting accepts the
    and select **Grok Bot** and **Cursor** under *Where do you want to be listed?*
    - Organization: Reason Machines; website `https://reasonmachines.com`.
    - Logotype URL: `https://raw.githubusercontent.com/reason-machines/reason-plugins/main/plugins/reason/assets/reason-logo.png`
-     (512×512 PNG on an opaque white plate).
+     (512×512 PNG: the hexagon mark on an opaque white plate).
    - MCP Server URL or Public GitHub Repository:
      `https://github.com/reason-machines/reason-plugins`.
    - Brief Description: the `description` in `plugins/reason/.cursor-plugin/plugin.json`.
@@ -225,6 +230,12 @@ node validate-template.mjs   # Cursor's template validator, run from the reposit
 checklist: valid JSON, unique kebab-case names, relative paths that exist, a
 square opaque logo, an OAuth-only MCP entry with no undeclared `${VAR}`, and
 frontmatter on every skill, command and rule.
+
+`tests/test_chatgpt_package.py` builds the ChatGPT/Codex directory ZIP with
+`scripts/build_chatgpt_zip.py` and validates it against the Agent Plugins 1.0.0
+schemas in `tests/schemas/` and the portal's submission limits. Install its
+Pillow build dependency with `python3 -m pip install -r scripts/requirements.txt`
+inside a virtual environment before running the build or package tests.
 
 `python3 -m unittest discover -s tests` installs the package with the Codex CLI
 and checks the manifests, the `renames` map for former plugin names, and

@@ -10,7 +10,7 @@
     {
       "name": "reason",
       "source": "./plugins/reason",
-      "description": "Manage Reason projects and coding sessions through the public MCP.",
+      "description": "Hand coding work to Reason cloud agents and follow their sessions through the public MCP.",
       "author": {
         "name": "Reason Machines",
         "email": "contact@reasonmachines.com",

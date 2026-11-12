@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reason",
-  "version": "1.2.0",
-  "description": "Launch and manage cloud coding agents across multiple machines with Reason.",
+  "version": "1.3.0",
+  "description": "Hand coding work to Reason cloud agents and follow each session to its pull request.",
   "author": {
     "name": "Reason Machines",
     "email": "contact@reasonmachines.com",
@@ -24,8 +24,8 @@
     "com.openai": {
       "interface": {
         "displayName": "Reason",
-        "shortDescription": "Cloud coding across machines",
-        "longDescription": "Launch and manage cloud coding agents with Reason. Work on coding tasks in parallel across multiple machines, organize projects, follow progress, and continue coding sessions in a shared workspace. Use Reason to delegate implementation, investigate bugs, and coordinate work with your team. Connect your Reason account to access the projects, sessions, and machines your workspace permissions allow. Tasks run asynchronously; machine access and availability depend on your workspace configuration.",
+        "shortDescription": "Hand off code to cloud agents",
+        "longDescription": "Hand coding work to Reason cloud agents from chat. Describe a task, such as fixing a bug, building a feature, reviewing a pull request, making failing CI pass or answering a question about a codebase, and Reason runs it on its own cloud machine in a GitHub repository connected to your Reason workspace. Each session returns a live link, and when it changes code it opens a pull request. You can list your recent sessions and check their status, result and pull request, send a follow-up to a running session, request a pull request review and schedule recurring engineering work as a Loop. Requires a Reason account with at least one GitHub repository connected. Sign in with OAuth and choose a workspace; every action is limited to that workspace's permissions and the scopes you approve. Sessions run asynchronously, so results arrive after the session finishes.",
         "developerName": "Reason Machines",
         "category": "Productivity",
         "capabilities": [
@@ -34,9 +34,9 @@
         ],
         "websiteURL": "https://reasonmachines.com",
         "defaultPrompt": [
-          "Show my Reason projects and recent coding sessions.",
-          "Start a cloud coding agent to investigate a bug in my repository.",
-          "Help me organize parallel coding tasks across my Reason machines."
+          "Show my recent Reason sessions and their pull requests.",
+          "Start a Reason session to investigate a bug in my repository.",
+          "Review a pull request in my repository with Reason."
         ],
         "composerIcon": "./assets/reason-logo.png",
         "logo": "./assets/reason-logo.png",

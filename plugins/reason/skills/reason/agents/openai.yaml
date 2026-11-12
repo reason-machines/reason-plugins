@@ -1,7 +1,7 @@
 interface:
   display_name: "Reason"
-  short_description: "Cloud coding across machines"
+  short_description: "Hand off code to cloud agents"
   icon_small: "./assets/reason-logo.png"
   icon_large: "./assets/reason-logo.png"
   brand_color: "#000000"
-  default_prompt: "Use $reason to show my projects and recent coding sessions."
+  default_prompt: "Use $reason to show my recent sessions and their pull requests."

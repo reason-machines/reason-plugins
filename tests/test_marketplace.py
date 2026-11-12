@@ -57,12 +57,12 @@ class MarketplaceInstallation(unittest.TestCase):
             self.assertEqual(portable['$schema'],
                              'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json')
             self.assertEqual(portable['name'], 'reason')
-            self.assertEqual(portable['version'], '1.2.0')
+            self.assertEqual(portable['version'], '1.3.0')
             self.assertEqual(portable['version'], plugin['version'])
             interface = portable['extensions']['com.openai']['interface']
             self.assertEqual(interface, plugin['interface'])
             self.assertEqual(interface['displayName'], 'Reason')
-            self.assertEqual(interface['shortDescription'], 'Cloud coding across machines')
+            self.assertEqual(interface['shortDescription'], 'Hand off code to cloud agents')
             self.assertLessEqual(len(interface['shortDescription']), 30)
             for key in ['websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL']:
                 self.assertTrue(interface[key].startswith('https://'), key)
