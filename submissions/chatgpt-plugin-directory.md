@@ -43,10 +43,12 @@ The ZIP is the portable Agent Plugins package in `plugins/reason/`. Its root
 `plugin.json` carries the listing (`extensions.com.openai.interface`). The
 package leaves out the Cursor, Claude and Codex compatibility files, because
 ZIPs with hooks or app references are rejected. Build it from the repository
-root:
+root. Install the Pillow requirement inside a virtual environment first
+(for example, create one with `python3 -m venv /tmp/reason-plugin-venv` and
+activate it with `. /tmp/reason-plugin-venv/bin/activate`):
 
 ```sh
-python3 -m pip install --user -r scripts/requirements.txt
+python3 -m pip install -r scripts/requirements.txt
 python3 scripts/build_chatgpt_zip.py            # writes reason-chatgpt.zip
 python3 -m unittest tests.test_chatgpt_package  # validates it
 ```

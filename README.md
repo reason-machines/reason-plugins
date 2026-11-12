@@ -233,7 +233,9 @@ frontmatter on every skill, command and rule.
 
 `tests/test_chatgpt_package.py` builds the ChatGPT/Codex directory ZIP with
 `scripts/build_chatgpt_zip.py` and validates it against the Agent Plugins 1.0.0
-schemas in `tests/schemas/` and the portal's submission limits.
+schemas in `tests/schemas/` and the portal's submission limits. Install its
+Pillow build dependency with `python3 -m pip install -r scripts/requirements.txt`
+inside a virtual environment before running the build or package tests.
 
 `python3 -m unittest discover -s tests` installs the package with the Codex CLI
 and checks the manifests, the `renames` map for former plugin names, and

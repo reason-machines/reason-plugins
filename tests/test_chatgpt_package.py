@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 import shutil
 import struct
+import subprocess
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -268,6 +270,17 @@ class ChatGPTPackage(unittest.TestCase):
         for value in ['invalid', [], False, 42]:
             with self.assertRaises(SystemExit):
                 builder.check_review({'extensions': {'com.openai': {'review': value}}})
+
+    def test_missing_pillow_exits_with_install_command(self):
+        probe = ("import runpy, sys; sys.modules['PIL'] = None; "
+                 f"runpy.run_path({str(ROOT / 'scripts/build_chatgpt_zip.py')!r}, run_name='__main__')")
+        result = subprocess.run([sys.executable, '-c', probe], cwd=ROOT,
+                                text=True, capture_output=True, timeout=30)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, '')
+        self.assertEqual(result.stderr.strip(),
+                         'Pillow is required: python3 -m pip install -r scripts/requirements.txt')
+        self.assertNotIn('Traceback', result.stderr)
 
     def test_build_is_reproducible(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -12,6 +12,7 @@ clears both lists." The build refuses a manifest that declares test cases, so
 it cannot replace or clear the cases saved in the portal draft.
 https://developers.openai.com/plugins/deploy/submission#configure-onboarding-review-and-publication
 
+Install: python3 -m pip install -r scripts/requirements.txt
 Usage: python3 scripts/build_chatgpt_zip.py [output.zip]
 """
 from io import BytesIO
@@ -23,7 +24,10 @@ from urllib.parse import urlsplit
 import zipfile
 import zlib
 
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    raise SystemExit('Pillow is required: python3 -m pip install -r scripts/requirements.txt') from None
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / 'plugins/reason'
