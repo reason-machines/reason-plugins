@@ -30,7 +30,15 @@ The owner gives the legal assent to the Cursor Marketplace Publisher Terms.
 
 ## Before submitting
 
-Install the plugin locally in Cursor from this repository, sign in, and run
-`/reason-status` and "Which Reason workspace am I connected to?". This
+Install the plugin locally in Cursor from this repository. When using the reviewer
+account, a fresh sign-in opens the personal workspace with an unpaid trial
+screen. Do not start a trial, add a card, or buy anything. Open **Switch company**
+and pick "Reason MCP Directory Review". The list has two workspaces: the personal
+one and "Reason MCP Directory Review". Choose "Reason MCP Directory Review"
+again on the MCP consent screen. That workspace is already funded. No account,
+reset, or funding change is needed. MFA and new-device prompts are not guaranteed
+to be absent.
+
+After sign-in, run `/reason-status` and "Which Reason workspace am I connected to?". This
 confirms the OAuth flow and that tools are listed. Cursor shows the
 server as `plugin-reason-reason` in approval prompts.
