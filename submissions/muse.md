@@ -3,12 +3,15 @@
 Portal: [muse.ai/platform](https://muse.ai/platform) → **Submit a connector**. Intake then continues at
 [platform.muse.ai](https://platform.muse.ai/) (guidelines: [platform.muse.ai/docs](https://platform.muse.ai/docs)).
 
-**Owner action:**
+**Owner action** (portal steps below are from the public guidelines and earlier
+notes; they are unverified until the owner signs in, because the portal was
+logged out when this was written):
 - Sign in with a `@reasonmachines.com` work email.
-- Accept the Muse Connector Terms and confirm authority over the brand assets.
-- Provide **business verification** for Ara Software, Inc. if the portal asks
-  for it. The guidelines list it (section 5.2) but do not name the provider;
-  check the portal for the exact step.
+- Accept the Muse developer terms and confirm authority over the brand assets.
+- Provide business verification for Ara Software, Inc. Guidelines section 5.2
+  asks for "business information and supporting evidence" to verify the
+  organization; it names no verification provider, so do not assume Persona.
+  Check the portal for the exact step.
 - Answer the **data processing questionnaire**.
 - Enter the dedicated reviewer test account.
 
@@ -49,7 +52,8 @@ annotation step is not live yet.
 
 ## Developer portal intake
 
-- **Business verification (Persona):** the owner verifies Ara Software, Inc.
+- **Business verification (section 5.2):** the owner provides what the portal
+  asks for to verify Ara Software, Inc. (provider and form unverified).
 - **Data processing questionnaire:**
   - Answer only from current, documented controls. The
     [security page](https://reasonmachines.com/security) and privacy policy are
@@ -65,10 +69,14 @@ annotation step is not live yet.
   - Scopes: leave empty or use the defaults. The server grants its default scope
     set when none is requested.
   - Enter the reviewer account (see [README](README.md), step 1).
-  - Run **Set up sign-in test** → **Sign in to test**, then check **MCP listing**
-    shows the tools with their annotations.
-- Explain to reviewers that `createSession` starts real asynchronous work in
-  the reviewer's sample repository only. No charges or external side effects
-  apply.
+  - Run the portal's sign-in test, then check the tool listing shows the tools
+    with their annotations. (Button names are unverified.)
+- Explain to reviewers what `createSession` does: it starts a real Reason
+  session that runs on a cloud machine, uses the reviewer workspace's Reason
+  usage allowance, and can push a branch and open a pull request in the
+  connected sample repository. Its effects stay inside the reviewer workspace
+  and that repository. It is a write tool (`readOnlyHint: false`), not a
+  destructive one. Whether a session counts against paid usage depends on the
+  reviewer workspace's plan; check that before giving reviewers access.
 - The Muse portal being logged out proves nothing about whether a private
   draft exists; sign in and check before starting a new submission.

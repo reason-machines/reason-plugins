@@ -52,8 +52,9 @@ python3 -m unittest tests.test_chatgpt_package  # validates it
 The ZIP contains only `plugin.json`, `mcp.json`, `skills/` and `assets/`.
 `tests/test_chatgpt_package.py` checks it against the Agent Plugins 1.0.0
 schemas kept in `tests/schemas/` and against the portal's public-submission
-limits. The same command with `zip -r` works too:
-`cd plugins/reason && zip -r ../../reason-chatgpt.zip plugin.json mcp.json skills assets`.
+limits. Build only with this script: it runs the same `check_review` guard the
+tests use, which refuses any declared `review.test_cases` (including `{}`). A
+hand-made `zip -r` skips that guard.
 
 `mcp.json` declares exactly one server, `reason`, at
 `https://mcp.reasonmachines.com/mcp` with no headers. Authentication comes
@@ -82,12 +83,17 @@ The tests check that they agree.
 ## MCP connection
 
 The draft's connection is already set up: OAuth with **Dynamic Client
-Registration (`dcr`)**, no client secret, and a verified domain. Reason serves
+Registration (`dcr`)**, no client secret, and a verified domain. The portal
+accepts the challenge on the MCP host or an eligible parent domain, and the
+draft is already verified, so configure nothing.
+
+The monorepo's MCP host can also serve
 `https://mcp.reasonmachines.com/.well-known/openai-apps-challenge` from an
-environment variable. The MCP discoverability work in the monorepo added it, and
-it returns 404 until a token is set. If the portal ever asks for a new token,
-store it as a deployment secret (not in chat or a file) and redeploy. Do not
-replace the token that verifies the current draft.
+environment variable. That route is optional. It returns 404 while the variable
+is unset, and the variable stays unset. Do not set it, and do not replace the
+challenge that verifies the current draft. Only if OpenAI later asks for a new
+challenge on that host would the owner store the token as a deployment secret
+(never in chat or a file) and redeploy.
 
 The tool scan says **Needs attention** because it is old. The owner decides when
 to rescan. Do not rescan or reconnect as part of preparing this package.
