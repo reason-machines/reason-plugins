@@ -164,9 +164,21 @@ memory.
 Negative cases are prompts where the plugin should **not** trigger. They are not
 tool calls that are expected to fail.
 
+Reviewer sign-in instructions:
+
+1. Sign in with the provided reviewer account. A fresh sign-in opens the personal
+   workspace with an unpaid trial screen. Do not start a trial, add a card, or
+   buy anything.
+2. Open **Switch company** and pick "Reason MCP Directory Review". The list has
+   two workspaces: the personal one and "Reason MCP Directory Review".
+3. Choose "Reason MCP Directory Review" again on the MCP consent screen. That
+   workspace is already funded. No account, reset, or funding change is needed.
+   MFA and new-device prompts are not guaranteed to be absent.
+
 Still needed from the owner:
-- Reviewer credentials in **Review details**, with a sign-in that needs no
-  email or SMS codes, magic links or MFA (see [README](README.md), step 1).
+- Reviewer credentials in **Review details**. Verify that sign-in meets the
+  directory's requirements for email or SMS codes, magic links, and MFA
+  (see [README](README.md), step 1).
 - A walkthrough video URL showing the five positive cases.
 - Release notes for 1.3.0 if the saved ones no longer fit, for example: "Updates
   the Reason plugin to 1.3.0: new hexagon logo and listing text that matches the

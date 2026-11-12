@@ -98,7 +98,14 @@ Paste into the reviewer instructions, then put the credentials in the portal's
 private fields:
 
 > 1. In Claude, add the connector and select Connect. A Reason sign-in page opens.
-> 2. Sign in with the test account provided, choose the workspace "Reason MCP Directory Review", and approve the permissions.
+> 2. Sign in with the test account provided. A fresh sign-in opens the personal
+>    workspace with an unpaid trial screen. Do not start a trial, add a card, or
+>    buy anything. Open **Switch company** and pick "Reason MCP Directory Review".
+>    The list has two workspaces: the personal one and "Reason MCP Directory
+>    Review". Choose "Reason MCP Directory Review" again on the MCP consent
+>    screen, then approve the permissions. That workspace is already funded.
+>    No account, reset, or funding change is needed. MFA and new-device prompts
+>    are not guaranteed to be absent.
 > 3. Try these scratch-session prompts. They do not need a connected repository:
 >    - "Which Reason account and workspace am I connected to, and what can this connection do?" (getSelf)
 >    - "List my Reasons, my recent sessions, and any devices or machines I can run work on." (listReasons, listSessions, listDevices, listMachines)

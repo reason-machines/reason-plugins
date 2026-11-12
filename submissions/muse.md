@@ -72,6 +72,15 @@ annotation step is not live yet.
   - Scopes: leave empty or use the defaults. The server grants its default scope
     set when none is requested.
   - Enter the reviewer account (see [README](README.md), step 1).
+  - Give reviewers these sign-in instructions:
+    1. Sign in with the provided reviewer account. A fresh sign-in opens the
+       personal workspace with an unpaid trial screen. Do not start a trial,
+       add a card, or buy anything.
+    2. Open **Switch company** and pick "Reason MCP Directory Review". The list
+       has two workspaces: the personal one and "Reason MCP Directory Review".
+    3. Choose "Reason MCP Directory Review" again on the MCP consent screen.
+       That workspace is already funded. No account, reset, or funding change
+       is needed. MFA and new-device prompts are not guaranteed to be absent.
   - Run the portal's sign-in test, then check the tool listing shows the tools
     with their annotations. (Button names are unverified.)
 - Explain to reviewers what `createSession` does: it starts a real Reason

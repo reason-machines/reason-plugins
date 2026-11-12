@@ -97,14 +97,20 @@ not already have. Do not buy a plan for this; record the gap instead.
    [platform.openai.com/plugins](https://platform.openai.com/plugins),
    [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish) (and the
    publisher's email for review mail), and [platform.muse.ai](https://platform.muse.ai/).
-1. **Create one reviewer test account** (all four directories use it):
-   - A dedicated Reason account in its own workspace, for example
-     `reviewer@reasonmachines.com`. Use no real customer data.
+1. **Use the existing reviewer test account** (all four directories use it):
+   - Use the dedicated reviewer account and the "Reason MCP Directory Review"
+     workspace. Use no real customer data.
+   - A fresh sign-in opens the personal workspace with an unpaid trial screen.
+     Do not start a trial, add a card, or buy anything. Open **Switch company**
+     and pick "Reason MCP Directory Review". The list has two workspaces: the
+     personal one and "Reason MCP Directory Review". Choose "Reason MCP Directory
+     Review" again on the MCP consent screen. That workspace is already funded.
+     No account, reset, or funding change is needed.
    - Connect one public sample GitHub repository to that workspace and run two or
      three sessions in it, so that `listSessions` and `getSession` return data.
    - ChatGPT requires a sign-in that works without email or SMS codes, magic
-     links or MFA approval. Check which Reason sign-in method meets that before
-     sharing the account.
+     links or MFA approval. Verify sign-in before sharing the account. MFA and
+     new-device prompts are not guaranteed to be absent.
    - Enter the credentials only in each portal's private reviewer fields. Never
      put them in this repository, a pull request or chat.
 2. **Cursor and Grok Bot** ([cursor-marketplace.md](cursor-marketplace.md)):
