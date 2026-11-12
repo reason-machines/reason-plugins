@@ -1,10 +1,11 @@
 # ChatGPT plugin directory
 
 > **Not ready to submit.** The 1.3.0 package builds and validates, but
-> submission still needs: the six review-case texts that are not on record (see
-> [Review information](#review-information)), real runs of all eight cases with
-> the reviewer account, the walkthrough video and the dedicated reviewer
-> account. Nothing has been uploaded, saved or submitted in the portal.
+> submission still needs real runs of all eight existing cases with the reviewer
+> account, the walkthrough video and the dedicated reviewer account. The package
+> omits `review.test_cases` to preserve the saved cases; recovering their six
+> unavailable historical texts is not required to build this update. Nothing has
+> been uploaded, saved or submitted in the portal.
 
 Portal: [platform.openai.com/plugins](https://platform.openai.com/plugins). One plugin ZIP lists Reason in both
 ChatGPT and Codex.
@@ -45,6 +46,7 @@ ZIPs with hooks or app references are rejected. Build it from the repository
 root:
 
 ```sh
+python3 -m pip install --user -r scripts/requirements.txt
 python3 scripts/build_chatgpt_zip.py            # writes reason-chatgpt.zip
 python3 -m unittest tests.test_chatgpt_package  # validates it
 ```
@@ -53,11 +55,12 @@ The ZIP contains only `plugin.json`, `mcp.json`, `skills/` and `assets/`.
 `tests/test_chatgpt_package.py` checks it against the Agent Plugins 1.0.0
 schemas kept in `tests/schemas/` and against the portal's public-submission
 limits. Build only with this script: it runs the same `check_review` guard the
-tests use, which refuses any declared `review.test_cases` (including `{}`). It
+tests use, which refuses any non-null `review.test_cases` (including `{}`). It
 also refuses listing URLs that are not https, lack a host, embed credentials or
 exceed 1,024 characters; empty required listing text; icons that are not
-complete, square PNGs of 48 to 4,096 pixels a side; and symlinks in the
-package. A hand-made `zip -r` skips all of these checks.
+complete, square PNGs of 48 to 4,096 pixels a side; icon paths outside the
+package; and symlinks in the package. PNG validation uses Pillow to verify and
+fully decode each image, plus checks for exact raster length and chunk structure. A hand-made `zip -r` skips all of these checks.
 
 `mcp.json` declares exactly one server, `reason`, at
 `https://mcp.reasonmachines.com/mcp` with no headers. Authentication comes
@@ -141,7 +144,7 @@ says:
 > preserves existing cases; `test_cases`: {} clears both lists.
 
 The build script refuses to write `test_cases: {}`, and
-`tests/test_chatgpt_package.py` fails if `plugin.json` declares any test cases.
+`tests/test_chatgpt_package.py` fails if `plugin.json` declares non-null test cases.
 Only two of the saved cases are on record outside the portal:
 
 - Positive 1: "Identify the connected reviewer workspace", tool `getSelf`,
@@ -151,8 +154,10 @@ Only two of the saved cases are on record outside the portal:
 
 The other six are not in this repository's history or in any Reason session
 found, so a package built from the original v1.1.1 source cannot be rebuilt
-yet. Copy them verbatim from the draft's source before declaring cases in a
-package. Do not write new ones from memory.
+yet. This does not block an update that omits `review.test_cases`: omission
+preserves all eight saved cases. Recover the original texts before changing
+those cases or claiming to have run them all. Do not write replacements from
+memory.
 
 Negative cases are prompts where the plugin should **not** trigger. They are not
 tool calls that are expected to fail.

@@ -174,6 +174,13 @@ class ChatGPTPackage(unittest.TestCase):
             'longDescription': '   ',
             'shortDescription': '',
         }
+        for value in ['https://exa mple.com', 'https://reasonmachines.com/ x',
+                      'https://reasonmachines.com\n', 'https://reasonmachines.com:invalid',
+                      'https://reasonmachines.com:99999', 'https://[::1/']:
+            manifest = json.loads(json.dumps(self.manifest))
+            manifest['extensions']['com.openai']['interface']['supportURL'] = value
+            with self.assertRaises(SystemExit, msg=value):
+                builder.check_listing(manifest)
         for key, value in bad.items():
             manifest = json.loads(json.dumps(self.manifest))
             manifest['extensions']['com.openai']['interface'][key] = value
@@ -194,6 +201,44 @@ class ChatGPTPackage(unittest.TestCase):
         }.items():
             with self.assertRaises(SystemExit, msg=label):
                 builder.check_png(data, label)
+
+    def test_build_refuses_png_without_raster_data(self):
+        def chunk(kind, body):
+            return struct.pack('>I', len(body)) + kind + body + struct.pack('>I', zlib.crc32(kind + body))
+        header = chunk(b'IHDR', struct.pack('>IIBBBBB', 48, 48, 8, 2, 0, 0, 0))
+        for raster in [b'', b'\x00', b'\x05' + b'\x00' * (48 * 3), b'\x00' * (48 * 145 + 1)]:
+            data = (builder.PNG_SIGNATURE + header + chunk(b'IDAT', zlib.compress(raster))
+                    + chunk(b'IEND', b''))
+            with self.assertRaises(SystemExit):
+                builder.check_png(data, 'invalid raster')
+
+    def test_build_refuses_invalid_png_structure(self):
+        def chunk(kind, body):
+            return struct.pack('>I', len(body)) + kind + body + struct.pack('>I', zlib.crc32(kind + body))
+        header = chunk(b'IHDR', struct.pack('>IIBBBBB', 48, 48, 8, 0, 0, 0, 0))
+        compressed = zlib.compress(b'\x00' * (49 * 48))
+        idat, end = chunk(b'IDAT', compressed), chunk(b'IEND', b'')
+        for body in [header + header + idat + end,
+                     header + idat + chunk(b'tEXt', b'key\x00value') + idat + end,
+                     chunk(b'IHDR', b'123') + idat + end,
+                     chunk(b'IHDR', struct.pack('>IIBBBBB', 48, 48, 3, 7, 0, 0, 0)) + idat + end,
+                     header + chunk(b'IDAT', compressed + b'extra') + end,
+                     header + idat + end + b'extra']:
+            with self.assertRaises(SystemExit):
+                builder.check_png(builder.PNG_SIGNATURE + body, 'invalid structure')
+
+    def test_build_refuses_icons_not_in_the_package(self):
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / 'reason'
+            shutil.copytree(PLUGIN, copy)
+            outside = Path(directory) / 'outside.png'
+            outside.write_bytes(self.archive.read('assets/reason-logo.png'))
+            for value in [str(outside), '../outside.png', 'unpackaged.png']:
+                (copy / 'unpackaged.png').write_bytes(outside.read_bytes())
+                manifest = json.loads(json.dumps(self.manifest))
+                manifest['extensions']['com.openai']['interface']['logo'] = value
+                with self.assertRaises(SystemExit):
+                    builder.check_icons(manifest, copy)
 
     def test_build_refuses_symlinks_out_of_the_package(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -220,6 +265,9 @@ class ChatGPTPackage(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 builder.check_review(manifest)
         builder.check_review({'extensions': {'com.openai': {'review': {'test_cases': None}}}})
+        for value in ['invalid', [], False, 42]:
+            with self.assertRaises(SystemExit):
+                builder.check_review({'extensions': {'com.openai': {'review': value}}})
 
     def test_build_is_reproducible(self):
         with tempfile.TemporaryDirectory() as directory:

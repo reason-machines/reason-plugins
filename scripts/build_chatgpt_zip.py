@@ -14,6 +14,7 @@ https://developers.openai.com/plugins/deploy/submission#configure-onboarding-rev
 
 Usage: python3 scripts/build_chatgpt_zip.py [output.zip]
 """
+from io import BytesIO
 import json
 from pathlib import Path
 import struct
@@ -21,6 +22,8 @@ import sys
 from urllib.parse import urlsplit
 import zipfile
 import zlib
+
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / 'plugins/reason'
@@ -64,56 +67,103 @@ def check_listing(manifest):
         value = interface.get(key)
         if not isinstance(value, str) or len(value) > MAX_URL:
             raise SystemExit(f'interface.{key} must be a URL of at most {MAX_URL} characters.')
-        parts = urlsplit(value)
-        if parts.scheme != 'https' or not parts.hostname:
-            raise SystemExit(f'interface.{key} must be an https URL with a host.')
-        if parts.username is not None or parts.password is not None:
-            raise SystemExit(f'interface.{key} must not embed credentials.')
+        if any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in value):
+            raise SystemExit(f'interface.{key} must not contain whitespace or control characters.')
+        try:
+            parts = urlsplit(value)
+            port = parts.port
+            if parts.scheme != 'https' or not parts.hostname:
+                raise ValueError('expected an https URL with a host')
+            if parts.username is not None or parts.password is not None:
+                raise ValueError('embedded credentials are not allowed')
+        except ValueError as error:
+            raise SystemExit(f'interface.{key}: invalid listing URL ({error}).') from error
 
 
 def check_png(data, label):
-    """Parse a whole PNG: signature, CRC of every chunk, IHDR first, IEND last, a complete zlib stream."""
-    if data[:8] != PNG_SIGNATURE:
-        raise SystemExit(f'{label}: not a PNG.')
-    offset, chunks, idat = 8, [], b''
+    """Verify PNG integrity and decode its pixels, within the listing's size limit."""
+    try:
+        with Image.open(BytesIO(data)) as image:
+            if image.format != 'PNG':
+                raise SystemExit(f'{label}: not a PNG.')
+            width, height = image.size
+            if width != height or not 48 <= width <= MAX_ICON_SIDE:
+                raise SystemExit(f'{label}: must be square, 48 to {MAX_ICON_SIDE} pixels a side (is {width}x{height}).')
+            image.verify()
+        check_png_stream(data, width, height, label)
+        # verify() checks chunks; load() also rejects missing or invalid raster data.
+        with Image.open(BytesIO(data)) as image:
+            image.load()
+    except (OSError, ValueError, SyntaxError, Image.DecompressionBombError) as error:
+        raise SystemExit(f'{label}: invalid PNG ({error}).') from error
+    return width, height
+
+
+def check_png_stream(data, width, height, label):
+    """Reject structural and raster-length errors that tolerant PNG decoders allow."""
+    offset, kinds, compressed = 8, [], []
     while offset < len(data):
         if offset + 12 > len(data):
-            raise SystemExit(f'{label}: truncated chunk.')
-        length, kind = struct.unpack('>I4s', data[offset:offset + 8])
-        body = data[offset + 8:offset + 8 + length]
-        crc_bytes = data[offset + 8 + length:offset + 12 + length]
-        if len(body) != length or len(crc_bytes) != 4:
-            raise SystemExit(f'{label}: truncated {kind!r} chunk.')
-        if zlib.crc32(kind + body) != struct.unpack('>I', crc_bytes)[0]:
-            raise SystemExit(f'{label}: bad CRC in {kind!r} chunk.')
-        chunks.append(kind)
+            raise SystemExit(f'{label}: truncated PNG chunk.')
+        length, kind = struct.unpack_from('>I4s', data, offset)
+        end = offset + length + 12
+        if end > len(data):
+            raise SystemExit(f'{label}: truncated PNG chunk.')
+        body = data[offset + 8:end - 4]
         if kind == b'IHDR':
-            width, height = struct.unpack('>II', body[:8])
+            if kinds or length != 13:
+                raise SystemExit(f'{label}: expected one 13-byte IHDR first.')
+            _, _, depth, color, compression, filtering, interlace = struct.unpack('>IIBBBBB', body)
+            depths = {0: (1, 2, 4, 8, 16), 2: (8, 16), 3: (1, 2, 4, 8), 4: (8, 16), 6: (8, 16)}
+            if depth not in depths.get(color, ()) or compression != 0 or filtering != 0 or interlace not in (0, 1):
+                raise SystemExit(f'{label}: invalid IHDR fields.')
         elif kind == b'IDAT':
-            idat += body
-        offset += 12 + length
-    if not chunks or chunks[0] != b'IHDR' or chunks[-1] != b'IEND' or b'IDAT' not in chunks:
-        raise SystemExit(f'{label}: missing IHDR, IDAT or IEND.')
+            if compressed and kinds[-1] != b'IDAT':
+                raise SystemExit(f'{label}: IDAT chunks must be contiguous.')
+            compressed.append(body)
+        elif kind == b'IEND' and (length != 0 or end != len(data)):
+            raise SystemExit(f'{label}: invalid IEND or trailing PNG data.')
+        kinds.append(kind)
+        offset = end
+    if not kinds or kinds[0] != b'IHDR' or kinds[-1] != b'IEND' or not compressed:
+        raise SystemExit(f'{label}: incomplete PNG structure.')
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color]
+    passes = [(0, 0, 1, 1)] if interlace == 0 else [
+        (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
+        (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2)]
+    expected = 0
+    for x, y, dx, dy in passes:
+        columns, rows = max(0, (width - x + dx - 1) // dx), max(0, (height - y + dy - 1) // dy)
+        if columns and rows:
+            expected += rows * (1 + (columns * channels * depth + 7) // 8)
     decoder = zlib.decompressobj()
     try:
-        decoder.decompress(idat)
+        raster = decoder.decompress(b''.join(compressed), expected + 1)
     except zlib.error as error:
-        raise SystemExit(f'{label}: corrupt image data ({error}).')
-    if not decoder.eof:
-        raise SystemExit(f'{label}: incomplete image data.')
-    if width != height or not 48 <= width <= MAX_ICON_SIDE:
-        raise SystemExit(f'{label}: must be square, 48 to {MAX_ICON_SIDE} pixels a side (is {width}x{height}).')
-    return width, height
+        raise SystemExit(f'{label}: invalid PNG raster ({error}).') from error
+    if len(raster) != expected or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:
+        raise SystemExit(f'{label}: PNG raster length does not match its header.')
 
 
 def check_icons(manifest, plugin=PLUGIN):
     interface = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {})
+    packaged = set(files(plugin))
     for key in ICONS:
-        check_png((plugin / interface[key]).read_bytes(), f'interface.{key}')
+        value = interface.get(key)
+        if not isinstance(value, str) or Path(value).is_absolute() or '..' in Path(value).parts:
+            raise SystemExit(f'interface.{key}: expected a package-relative icon path.')
+        path = plugin / value
+        if path not in packaged or plugin.resolve() not in path.resolve().parents:
+            raise SystemExit(f'interface.{key}: icon must be included in the package.')
+        check_png(path.read_bytes(), f'interface.{key}')
 
 
 def check_review(manifest):
-    review = manifest.get('extensions', {}).get('com.openai', {}).get('review') or {}
+    review = manifest.get('extensions', {}).get('com.openai', {}).get('review')
+    if review is None:
+        return
+    if not isinstance(review, dict):
+        raise SystemExit('com.openai.review must be an object or null.')
     if review.get('test_cases') is not None:
         raise SystemExit('plugin.json declares review.test_cases; an upload would replace '
                          'or clear the cases saved in the portal draft. Remove them.')
