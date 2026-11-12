@@ -4,9 +4,9 @@ Portal: [claude.ai/directory/manage](https://claude.ai/directory/manage) → **S
 Requirements: [Submit a connector](https://claude.com/docs/connectors/building/submission).
 
 **Owner action:** the portal needs a paid Claude account. Any personal Pro,
-Max or Ultra account can submit; on Team or Enterprise only an Owner (or a
-member with the Directory permission) can
-([Publish to the directory](https://claude.com/docs/directory/publish)). No
+Max or Ultra account can submit. On Team, an Owner submits. On Enterprise, an
+Owner submits or grants the Directory permission to a member through a custom
+role ([Publish to the directory](https://claude.com/docs/directory/publish)). No
 purchase is needed. It also needs a reviewer test account, whose credentials go
 only in the portal's private fields (see [README](README.md), step 1), and
 seven compliance acknowledgments. The listing belongs to the organization you

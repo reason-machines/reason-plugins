@@ -9,10 +9,12 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import shutil
 import struct
 import tempfile
 import unittest
 import zipfile
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / 'plugins/reason'
@@ -22,6 +24,15 @@ SERVER_URL = 'https://mcp.reasonmachines.com/mcp'
 spec = importlib.util.spec_from_file_location('build_chatgpt_zip', ROOT / 'scripts/build_chatgpt_zip.py')
 builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
+
+
+def png(width, height):
+    """A minimal valid 8-bit greyscale PNG of the given size."""
+    def chunk(kind, body):
+        return struct.pack('>I', len(body)) + kind + body + struct.pack('>I', zlib.crc32(kind + body))
+    rows = zlib.compress(b'\x00' * ((width + 1) * height), 9)
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 0, 0, 0, 0))
+            + chunk(b'IDAT', rows) + chunk(b'IEND', b''))
 
 
 def validate(instance, schema, root=None, where='$'):
@@ -152,6 +163,49 @@ class ChatGPTPackage(unittest.TestCase):
             data = self.archive.read(name)
             if name.endswith(('.json', '.md', '.yaml')):
                 self.assertNotRegex(data.decode(), r'(?i)(bearer\s+[a-z0-9_\-]{20,}|password\s*[:=])', name)
+
+    def test_build_refuses_bad_listing_metadata(self):
+        builder.check_listing(self.manifest)
+        bad = {
+            'websiteURL': 'https://user:secret@reasonmachines.com',
+            'supportURL': 'https://reasonmachines.com/' + 'a' * 1024,
+            'privacyPolicyURL': 'http://reasonmachines.com/privacy-policy',
+            'termsOfServiceURL': 'https:///terms-of-service',
+            'longDescription': '   ',
+            'shortDescription': '',
+        }
+        for key, value in bad.items():
+            manifest = json.loads(json.dumps(self.manifest))
+            manifest['extensions']['com.openai']['interface'][key] = value
+            with self.assertRaises(SystemExit, msg=key):
+                builder.check_listing(manifest)
+
+    def test_build_refuses_corrupt_or_oversized_icons(self):
+        good = self.archive.read('assets/reason-logo.png')
+        self.assertEqual(builder.check_png(good, 'logo'), (512, 512))
+        builder.check_png(png(4096, 4096), 'largest')
+        for label, data in {
+            'truncated header': good[:24],
+            'truncated data': good[:len(good) // 2],
+            'bad crc': good[:40] + bytes([good[40] ^ 0xFF]) + good[41:],
+            'too large': png(8192, 8192),
+            'too small': png(16, 16),
+            'not square': png(512, 256),
+        }.items():
+            with self.assertRaises(SystemExit, msg=label):
+                builder.check_png(data, label)
+
+    def test_build_refuses_symlinks_out_of_the_package(self):
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / 'reason'
+            shutil.copytree(PLUGIN, copy)
+            outside = Path(directory) / 'outside.txt'
+            outside.write_text('not part of the package')
+            (copy / 'assets/external.txt').symlink_to(outside)
+            with self.assertRaises(SystemExit):
+                builder.build(Path(directory) / 'out.zip', copy)
+            (copy / 'assets/external.txt').unlink()
+            builder.build(Path(directory) / 'out.zip', copy)
 
     def test_upload_keeps_the_drafts_review_cases(self):
         # The portal draft's review cases are managed by its earlier ZIP. A

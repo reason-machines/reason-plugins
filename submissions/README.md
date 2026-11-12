@@ -61,9 +61,11 @@ cases saved from its ZIP. Update that draft; do not create a second plugin.
   booleans: 78 are read-only and 27 are destructive. `openWorldHint` is `true`
   on all 171, although most tools stay inside the connected workspace; OpenAI's
   guidelines allow `false` for tools bounded to a private workspace, so this is
-  a server-side decision to make before review. No tool sells plans, credits or
-  subscriptions, or links to checkout (no tool name mentions billing, plans,
-  checkout, credits or payments). The list shrinks to the scopes the user grants.
+  a server-side decision to make before review. No tool name mentions billing,
+  plans, checkout, credits or payments. That is a name-only check: whether any
+  tool's description or behaviour offers a purchase, upsell or checkout link is
+  still being audited (see the ChatGPT guide's guideline check). The list
+  shrinks to the scopes the user grants.
 - **Data handling:** the API is Reason's own (first-party). The connector does
   not process payments or handle health data. It reads and writes the user's
   Reason workspace data: sessions and their conversations, repositories
@@ -112,8 +114,9 @@ not already have. Do not buy a plan for this; record the gap instead.
    account is needed.
 3. **Claude** ([claude-connectors-directory.md](claude-connectors-directory.md)):
    sign in to [claude.ai/directory/manage](https://claude.ai/directory/manage).
-   Any paid personal Claude account (Pro, Max or Ultra) can submit; on Team or
-   Enterprise only an Owner (or a member with the Directory permission) can.
+   Any paid personal Claude account (Pro, Max or Ultra) can submit. On Team,
+   an Owner submits. On Enterprise, an Owner submits or grants the Directory
+   permission to a member through a custom role.
    Nothing needs to be bought. Enter the listing fields, the reviewer account
    (in the portal's private fields only) and the seven compliance acknowledgments. It publishes as
    a Community listing. Anthropic decides on its own whether to escalate it to

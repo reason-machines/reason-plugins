@@ -53,8 +53,11 @@ The ZIP contains only `plugin.json`, `mcp.json`, `skills/` and `assets/`.
 `tests/test_chatgpt_package.py` checks it against the Agent Plugins 1.0.0
 schemas kept in `tests/schemas/` and against the portal's public-submission
 limits. Build only with this script: it runs the same `check_review` guard the
-tests use, which refuses any declared `review.test_cases` (including `{}`). A
-hand-made `zip -r` skips that guard.
+tests use, which refuses any declared `review.test_cases` (including `{}`). It
+also refuses listing URLs that are not https, lack a host, embed credentials or
+exceed 1,024 characters; empty required listing text; icons that are not
+complete, square PNGs of 48 to 4,096 pixels a side; and symlinks in the
+package. A hand-made `zip -r` skips all of these checks.
 
 `mcp.json` declares exactly one server, `reason`, at
 `https://mcp.reasonmachines.com/mcp` with no headers. Authentication comes
