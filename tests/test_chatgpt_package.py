@@ -178,7 +178,10 @@ class ChatGPTPackage(unittest.TestCase):
         }
         for value in ['https://exa mple.com', 'https://reasonmachines.com/ x',
                       'https://reasonmachines.com\n', 'https://reasonmachines.com:invalid',
-                      'https://reasonmachines.com:99999', 'https://[::1/']:
+                      'https://reasonmachines.com:99999', 'https://[::1/',
+                      'https://reasonmachines.com:0', 'https://reason\u200bmachines.com',
+                      'https://reasonmachines.com/\u200d', 'https://reasonmachines.com/\ufeff',
+                      'https://reasonmachines.com/\u2060x', 'https://reasonmachines.com/\u00ad']:
             manifest = json.loads(json.dumps(self.manifest))
             manifest['extensions']['com.openai']['interface']['supportURL'] = value
             with self.assertRaises(SystemExit, msg=value):
@@ -228,6 +231,17 @@ class ChatGPTPackage(unittest.TestCase):
                      header + idat + end + b'extra']:
             with self.assertRaises(SystemExit):
                 builder.check_png(builder.PNG_SIGNATURE + body, 'invalid structure')
+
+    def test_build_refuses_palette_png_without_plte(self):
+        def chunk(kind, body):
+            return struct.pack('>I', len(body)) + kind + body + struct.pack('>I', zlib.crc32(kind + body))
+        header = chunk(b'IHDR', struct.pack('>IIBBBBB', 48, 48, 8, 3, 0, 0, 0))
+        idat, end = chunk(b'IDAT', zlib.compress(b'\x00' * (49 * 48))), chunk(b'IEND', b'')
+        palette = chunk(b'PLTE', b'\x00\x00\x00')
+        builder.check_png(builder.PNG_SIGNATURE + header + palette + idat + end, 'palette')
+        for body in [header + idat + end, header + idat + palette + end]:
+            with self.assertRaises(SystemExit):
+                builder.check_png(builder.PNG_SIGNATURE + body, 'palette without PLTE')
 
     def test_build_refuses_icons_not_in_the_package(self):
         with tempfile.TemporaryDirectory() as directory:
